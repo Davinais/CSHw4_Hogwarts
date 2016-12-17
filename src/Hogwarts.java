@@ -16,7 +16,7 @@ public enum Hogwarts
     {
         return intelligence;
     }
-    public int PercentOfMA()
+    public int percentOfMA()
     {
         return magicalAffinityPercent;
     }
