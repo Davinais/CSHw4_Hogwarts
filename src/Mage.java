@@ -30,6 +30,10 @@ class StatusTurn
     {
         return (0 < --turn);
     }
+    public int getTurn()
+    {
+        return turn;
+    }
 }
 public class Mage
 {
@@ -116,6 +120,25 @@ public class Mage
             if(!(spellSE.equals(SpecialEffect.NONE)) && !(status.containsKey(spellSE)))
                 status.put(spellSE, new StatusTurn(spellSE.getNeededTurn()));
         }
+    }
+    @Override
+    public String toString()
+    {
+        StringBuilder statusString = new StringBuilder();
+        statusString.append("[").append(NAME).append("]").append(System.lineSeparator());
+        statusString.append("   體力：").append(stamina).append("/").append(STAMINA_MAX).append(System.lineSeparator());
+        statusString.append("   智力：").append(intelligence).append(System.lineSeparator());
+        statusString.append("   狀態：");
+        if(status.isEmpty())
+            statusString.append(SpecialEffect.NONE);
+        else
+        {
+            for(Map.Entry<SpecialEffect, StatusTurn> stat : status.entrySet())
+            {
+                statusString.append(stat.getKey()).append("[").append(stat.getValue().getTurn()).append("回合] ");
+            }
+        }
+        return statusString.toString();
     }
     public boolean isInStatus(SpecialEffect effect)
     {
