@@ -84,10 +84,9 @@ public class Mage
         stamina -= staminaCost;
         return injury;
     }
-    public boolean learnSpell(Spell spell)
+    public boolean learnSpellCheck(Spell spell)
     {
         learnTemp = null;
-        int staminaCost = 10;
         if(!spell.validToLearn(intelligence))
         {
             System.out.println("["+NAME+"]沒有滿足精進這個技能的前置條件呢，換個行動吧");
@@ -104,10 +103,8 @@ public class Mage
                         System.out.println("["+NAME+"]完全熟練的技能，沒有再度學習的必要了呢，換個行動吧");
                         return false;
                     }
-                    atkSpells.get(spell).addExp(spell.getLearnExp());
                 }
-                else
-                    learnTemp = spell;
+                learnTemp = spell;
                 break;
             }
             case DEFENSE:
@@ -119,10 +116,8 @@ public class Mage
                         System.out.println("["+NAME+"]完全熟練的技能，沒有再度學習的必要了呢，換個行動吧");
                         return false;
                     }
-                    defSpells.get(spell).addExp(spell.getLearnExp());
                 }
-                else
-                    learnTemp = spell;
+                learnTemp = spell;
                 break;
             }
             case MOVE:
@@ -134,10 +129,42 @@ public class Mage
                         System.out.println("["+NAME+"]完全熟練的技能，沒有再度學習的必要了呢，換個行動吧");
                         return false;
                     }
-                    movSpells.get(spell).addExp(spell.getLearnExp());
                 }
+                learnTemp = spell;
+                break;
+            }
+            default:
+                return false;
+        }
+        return true;
+    }
+    private void learnSpell(Spell spell)
+    {
+        int staminaCost = 10;
+        switch(spell.getType())
+        {
+            case ATTACK:
+            {
+                if(atkSpells.containsKey(spell))
+                    atkSpells.get(spell).addExp(spell.getLearnExp());
                 else
-                    learnTemp = spell;
+                    atkSpells.put(learnTemp, new SpellExp(learnTemp.getInitialExp()));
+                break;
+            }
+            case DEFENSE:
+            {
+                if(defSpells.containsKey(spell))
+                    defSpells.get(spell).addExp(spell.getLearnExp());
+                else
+                    defSpells.put(learnTemp, new SpellExp(learnTemp.getInitialExp()));
+                break;
+            }
+            case MOVE:
+            {
+                if(movSpells.containsKey(spell))
+                    movSpells.get(spell).addExp(spell.getLearnExp());
+                else
+                    movSpells.put(learnTemp, new SpellExp(learnTemp.getInitialExp()));
                 break;
             }
             default:
@@ -146,7 +173,6 @@ public class Mage
         intelligence += spell.getLearnInt();
         stamina -= staminaCost;
         System.out.println("["+NAME+"]成功精進了 " + spell + " 的使用技巧！");
-        return true;
     }
     public boolean usePotion()
     {
@@ -179,6 +205,25 @@ public class Mage
                 status.put(spellSE, new StatusTurn(spellSE.getNeededTurn()));
         }
     }
+    public void instantDeath()
+    {
+        stamina = 0;
+    }
+    public void staminaChange(int change)
+    {
+        stamina += change;
+    }
+    public void intelligenceChange(int change)
+    {
+        intelligence -= change;
+    }
+    private void staminaCorrect()
+    {
+        if(stamina > STAMINA_MAX)
+            stamina = STAMINA_MAX;
+        else if(stamina < 0)
+            stamina = 0;
+    }
     public boolean turnEnd(Injury injury)
     {
         if(injury.isInjuryExisted())
@@ -188,28 +233,15 @@ public class Mage
             if(stat.getValue().getTurn() <= 0)
                 status.remove(stat.getKey());
         }
+        staminaCorrect();
+        if(learnTemp != null)
+        {
+            learnSpell(learnTemp);
+            learnTemp = null;
+        }
         System.out.println(this);
         for(Map.Entry<SpecialEffect, StatusTurn> stat : status.entrySet())
             stat.getValue().turnDecrement();
-        if(learnTemp != null)
-        {
-            switch(learnTemp.getType())
-            {
-                case ATTACK:
-                    atkSpells.put(learnTemp, new SpellExp(learnTemp.getInitialExp()));
-                    break;
-                case DEFENSE:
-                    defSpells.put(learnTemp, new SpellExp(learnTemp.getInitialExp()));
-                    break;
-                case MOVE:
-                    movSpells.put(learnTemp, new SpellExp(learnTemp.getInitialExp()));
-                    break;
-                default:
-                    break;
-            }
-        }
-        if(stamina > STAMINA_MAX)
-            stamina = STAMINA_MAX;
         if(stamina <= 0)
             return true;
         else

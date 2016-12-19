@@ -50,7 +50,7 @@ public class hw4
                 {
                     try
                     {
-                        isValid = mage.learnSpell(Spell.valueOf(arg.toUpperCase()));
+                        isValid = mage.learnSpellCheck(Spell.valueOf(arg.toUpperCase()));
                         if(isValid)
                             injury.add(Injury.noInjury());
                     }
@@ -80,6 +80,7 @@ public class hw4
         int playerNum = 2;
         players = new ArrayList<>();
         injury = new ArrayList<>();
+        SuddenEventHandler events = new SuddenEventHandler("/text/event.txt");
         for(int i=0; i<playerNum; i++)
         {
             boolean error = false;
@@ -133,6 +134,8 @@ public class hw4
                     }
                 }while(!isValid);
             }
+            if(events.hasEvent(nowTurn))
+                events.dealWithEvent(nowTurn, players);
             for(int i=0; i < playerNum; i++)
             {
                 int injurySource = (i+1<playerNum)?i+1:0;
