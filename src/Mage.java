@@ -52,8 +52,7 @@ public class Mage
         NAME = name;
         STAMINA_MAX = college.getMaxStamina();
         MA_PERCENT = college.percentOfMA();
-        //intelligence = college.getInt();
-        intelligence = 35;
+        intelligence = college.getInt();
         stamina = STAMINA_MAX;
         potionAmount = 5;
         learnTemp = null;
