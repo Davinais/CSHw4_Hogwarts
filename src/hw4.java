@@ -11,6 +11,8 @@ public class hw4
         String arg = "";
         for(int i=1; i<commands.length; i++)
         {
+            if(i!=1)
+                arg += "_";
             arg += commands[i];
         }
         switch(commands[0])
@@ -70,6 +72,7 @@ public class hw4
                 break;
             default:
                 isValid = false;
+                System.out.println("["+mage.getName()+"]找不到你輸入的指令呢，請確認拼字重新輸入試試看喔");
                 break;
         }
         return isValid;
@@ -100,6 +103,8 @@ public class hw4
                 {
                     System.out.println("[玩家"+(i+1)+"]看起來找不到你想讀的學院呢…，請確認拼字重新輸入試試看喔");
                     error = true;
+                    if(scanner.hasNextLine())
+                        scanner.nextLine();
                 }
             }while(error);
         }
@@ -107,6 +112,8 @@ public class hw4
             scanner.nextLine();
         int nowTurn = 0;
         boolean gameEnd = false;
+        
+        Game:
         while(!gameEnd)
         {
             System.out.println("[回合"+ (++nowTurn) +"]");
@@ -125,7 +132,7 @@ public class hw4
                     String command = scanner.nextLine();
                     if(command.equals("game over"))
                     {
-                        gameEnd = true;
+                        break Game;
                     }
                     else
                     {
