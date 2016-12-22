@@ -2,14 +2,16 @@ import java.util.NoSuchElementException;
 
 public class Injury
 {
-    private int damage;
+    private double damage;
     private boolean exist;
     private SpecialEffect effect;
+    private Spell spell;
     private static final Injury NO_INJURY = new Injury();
 
-    public Injury(int damage, SpecialEffect effect)
+    public Injury(Spell spell, double damage, SpecialEffect effect)
     {
         exist = true;
+        this.spell = spell;
         this.damage = damage;
         this.effect = effect;
     }
@@ -25,7 +27,7 @@ public class Injury
     {
         return exist;
     }
-    public int getDamage() throws NoSuchElementException
+    public double getDamage() throws NoSuchElementException
     {
         if(!exist)
             throw new NoSuchElementException();
@@ -36,5 +38,11 @@ public class Injury
         if(!exist)
             throw new NoSuchElementException();
         return effect;
+    }
+    public Spell getSpell()
+    {
+        if(!exist)
+            throw new NoSuchElementException();
+        return spell;
     }
 }

@@ -45,16 +45,19 @@ public class Mage
     private final int STAMINA_MAX, MA_PERCENT;
     private Spell learnTemp;
     private int intelligence, stamina, potionAmount;
-    private int beDamaged, reduceDamage;
+    private double reduceDamage;
+    private Injury lastinjured;
     public Mage(String name, Hogwarts college)
     {
         NAME = name;
         STAMINA_MAX = college.getMaxStamina();
         MA_PERCENT = college.percentOfMA();
-        intelligence = college.getInt();
+        //intelligence = college.getInt();
+        intelligence = 35;
         stamina = STAMINA_MAX;
         potionAmount = 5;
         learnTemp = null;
+        lastinjured = null;
     }
     public Injury attack(Spell spell)
     {
@@ -64,13 +67,13 @@ public class Mage
         {
             case ATTACK:
             {
-                int damage = (int)Math.floor(spell.getBasicNumber()*(atkSpells.get(spell).getValue()*0.01)*(1+MA_PERCENT*0.01));
-                injury = new Injury(damage, spell.getSpecialEffect());
+                double damage = Math.floor(spell.getBasicNumber()*(atkSpells.get(spell).getValue()*0.01)*(1+MA_PERCENT*0.01));
+                injury = new Injury(spell, damage, spell.getSpecialEffect());
                 break;
             }
             case MOVE:
             {
-                injury = new Injury(0, spell.getSpecialEffect());
+                injury = new Injury(spell, 0, spell.getSpecialEffect());
                 staminaCost += spell.getExtraCost();
                 break;
             }
@@ -184,11 +187,17 @@ public class Mage
     }
     public void beCasted(Injury injury)
     {
-        beDamaged = injury.getDamage();
+        lastinjured = injury;
         autoCastDefense();
-        stamina -= (beDamaged - reduceDamage);
-        if(!injury.getEffect().equals(SpecialEffect.NONE) && !status.containsKey(injury.getEffect()))
-            status.put(injury.getEffect(), new StatusTurn(injury.getEffect().getNeededTurn()));
+        stamina -= (int)(Math.ceil(injury.getDamage() - reduceDamage));
+        System.out.println("["+NAME+"]"+"遭受到了來自敵方的"+injury.getSpell()+"攻擊！");
+    }
+    private void addNextTurnStatus()
+    {
+        if(lastinjured == null)
+            return;
+        if(!lastinjured.getEffect().equals(SpecialEffect.NONE) && !status.containsKey(lastinjured.getEffect()))
+            status.put(lastinjured.getEffect(), new StatusTurn(lastinjured.getEffect().getNeededTurn()));
     }
     public void autoCastDefense()
     {
@@ -197,13 +206,18 @@ public class Mage
         reduceDamage = 0;
         for(Map.Entry<Spell, SpellExp> spell : defSpells.entrySet())
         {
-            int temp = (int)(Math.floor((spell.getKey().getBasicNumber()*0.01)*(1+spell.getValue().getValue()*0.01)*beDamaged));
+            double temp = (spell.getKey().getBasicNumber()*0.01)*(1+spell.getValue().getValue()*0.01)*lastinjured.getDamage();
             if(temp > reduceDamage)
                 reduceDamage = temp;
-            SpecialEffect spellSE = spell.getKey().getSpecialEffect();
-            if(!(spellSE.equals(SpecialEffect.NONE)) && !(status.containsKey(spellSE)))
-                status.put(spellSE, new StatusTurn(spellSE.getNeededTurn()));
         }
+        patronusDefense();
+    }
+    public void patronusDefense()
+    {
+        if(status.containsKey(SpecialEffect.DISARMED) || status.containsKey(SpecialEffect.PETRIFIED))
+            return;
+        if(defSpells.containsKey(Spell.EXPECTO_PATRONUM) && !status.containsKey(Spell.EXPECTO_PATRONUM.getSpecialEffect()))
+            status.put(Spell.EXPECTO_PATRONUM.getSpecialEffect(), new StatusTurn(Spell.EXPECTO_PATRONUM.getSpecialEffect().getNeededTurn()));
     }
     public void instantDeath()
     {
@@ -228,20 +242,19 @@ public class Mage
     {
         if(injury.isInjuryExisted())
             beCasted(injury);
-        for(Map.Entry<SpecialEffect, StatusTurn> stat : status.entrySet())
-        {
-            if(stat.getValue().getTurn() <= 0)
-                status.remove(stat.getKey());
-        }
-        staminaCorrect();
         if(learnTemp != null)
         {
             learnSpell(learnTemp);
             learnTemp = null;
         }
+        staminaCorrect();
         System.out.println(this);
         for(Map.Entry<SpecialEffect, StatusTurn> stat : status.entrySet())
-            stat.getValue().turnDecrement();
+        {
+            if(stat.getValue().turnDecrement())
+                status.remove(stat.getKey());
+        }
+        addNextTurnStatus();
         if(stamina <= 0)
             return true;
         else
@@ -254,6 +267,7 @@ public class Mage
         statusString.append("[").append(NAME).append("]").append(System.lineSeparator());
         statusString.append("   體力：").append(stamina).append("/").append(STAMINA_MAX).append(System.lineSeparator());
         statusString.append("   智力：").append(intelligence).append(System.lineSeparator());
+        statusString.append("   魔藥數量：").append(potionAmount).append(System.lineSeparator());
         statusString.append("   狀態：");
         if(status.isEmpty())
             statusString.append(SpecialEffect.NONE);
@@ -263,6 +277,19 @@ public class Mage
             {
                 statusString.append(stat.getKey()).append("[").append(stat.getValue().getTurn()).append("回合] ");
             }
+        }
+        statusString.append(System.lineSeparator());
+        statusString.append("   咒語：");
+        if(atkSpells.isEmpty() && defSpells.isEmpty() && movSpells.isEmpty())
+            statusString.append("無");
+        else
+        {
+            for(Map.Entry<Spell, SpellExp> atkSpell : atkSpells.entrySet())
+                statusString.append(atkSpell.getKey()).append("[").append(atkSpell.getValue().getValue()).append("%] ");
+            for(Map.Entry<Spell, SpellExp> defSpell : defSpells.entrySet())
+                statusString.append(defSpell.getKey()).append("[").append(defSpell.getValue().getValue()).append("%] ");
+            for(Map.Entry<Spell, SpellExp> movSpell : movSpells.entrySet())
+                statusString.append(movSpell.getKey()).append("[").append(movSpell.getValue().getValue()).append("%] ");
         }
         return statusString.toString();
     }
