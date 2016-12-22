@@ -4,7 +4,7 @@ public enum Spell
     SPECTUMSEMPRA(SpellType.ATTACK, 35, 30, 80, 4, 5, SpecialEffect.BLEEDING, 0),
     IMPEDIMENTA(SpellType.DEFENSE, 15, 40, 20, 2, 20, SpecialEffect.NONE, 0), PROTEGO(SpellType.DEFENSE, 25, 30, 30, 3, 8, SpecialEffect.NONE, 0),
     EXPECTO_PATRONUM(SpellType.DEFENSE, 35, 100, 0, 8, 0, SpecialEffect.PATRONUS, 0),
-    EXPELLIARMUS(SpellType.MOVE, 10, 50, 0, 2, 10, SpecialEffect.DISARMED, 10), PERTRIFICUS_TOTALUS(SpellType.MOVE, 10, 50, 0, 2, 10, SpecialEffect.PETRIFIED, 20);
+    EXPELLIARMUS(SpellType.MOVE, 10, 100, 0, 2, 10, SpecialEffect.DISARMED, 10), PERTRIFICUS_TOTALUS(SpellType.MOVE, 10, 100, 0, 2, 10, SpecialEffect.PETRIFIED, 20);
 
     private final int requiredInt, initialExp, basicNumber, learnInt, learnExp, extraCost;
     private final SpellType type;
