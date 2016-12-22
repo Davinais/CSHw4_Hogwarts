@@ -149,6 +149,8 @@ public class hw4
             scanner.nextLine();
         int nowTurn = 0;
         boolean gameEnd = false;
+        //做出分隔線字串，以取代char陣列中的null為"="的方式實現
+        String separateLine = new String(new char[79]).replace("\0", "=");
         
         printHelp();
         Game:
@@ -181,10 +183,12 @@ public class hw4
             }
             if(events.hasEvent(nowTurn))
                 events.dealWithEvent(nowTurn, players);
+            System.out.println(separateLine);
             for(int i=0; i < playerNum; i++)
             {
                 int injurySource = (i+1<playerNum)?i+1:0;
                 gameEnd |= players.get(i).turnEnd(injury.get(injurySource));
+                System.out.println(separateLine);
             }
         }
         //檢查勝利者
